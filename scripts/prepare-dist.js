@@ -17,6 +17,10 @@ if (fs.existsSync(outputPublicDir)) {
   fs.cpSync(outputPublicDir, distDir, { recursive: true });
   console.log("✓ Copied .output/public assets to dist/");
 }
+const publicDir = path.join(rootDir, "public");
+if (fs.existsSync(publicDir)) {
+  fs.cpSync(publicDir, distDir, { recursive: true });
+}
 
 // 3. Find any generated CSS and JS files
 const assetsDir = path.join(distDir, "assets");
