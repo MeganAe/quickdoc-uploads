@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="docGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F1F5F9"/>
+    </linearGradient>
+    <linearGradient id="foldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CBD5E1"/>
+      <stop offset="100%" stop-color="#94A3B8"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-opacity="0.25" flood-color="#1E1B4B"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+
+  <!-- Inner subtle glow ring -->
+  <rect x="8" y="8" width="496" height="496" rx="120" fill="none" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="4"/>
+
+  <!-- Document Body with Shadow -->
+  <g filter="url(#shadow)">
+    <!-- Document Main Outline with Folded Corner -->
+    <path d="M160 110 H300 L370 180 V370 C370 387.673 355.673 402 338 402 H160 C142.327 402 128 387.673 128 370 V142 C128 124.327 142.327 110 160 110 Z" fill="url(#docGrad)"/>
+    
+    <!-- Folded Corner Flap -->
+    <path d="M296 110 V164 C296 172.837 303.163 180 312 180 H370 Z" fill="url(#foldGrad)"/>
+  </g>
+
+  <!-- Document Lines (Text placeholder) -->
+  <rect x="176" y="220" width="100" height="16" rx="8" fill="#CBD5E1"/>
+  <rect x="176" y="254" width="160" height="14" rx="7" fill="#E2E8F0"/>
+  <rect x="176" y="280" width="130" height="14" rx="7" fill="#E2E8F0"/>
+
+  <!-- Upload Action Badge (Floating Circle + Dynamic Arrow) -->
+  <circle cx="340" cy="330" r="64" fill="url(#accentGrad)" filter="url(#shadow)"/>
+  <circle cx="340" cy="330" r="58" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2"/>
+
+  <!-- Crisp Modern Upload Arrow Inside Badge -->
+  <path d="M340 298 L368 328 H348 V360 H332 V328 H312 Z" fill="#FFFFFF"/>
+</svg>
