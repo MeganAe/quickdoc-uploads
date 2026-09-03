@@ -38,7 +38,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://huwitbpebnnqaanzcacd.supabase.co' }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable__WmduMwOUsyuUr8XPkBTgA_0iGrECaC' }}
-        run: npm run build
+        run: |
+          npm run build
+          npm run prepare:dist
 
       - name: Initialize & Sync Capacitor Android
         run: |
@@ -85,10 +87,12 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://huwitbpebnnqaanzcacd.supabase.co' }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable__WmduMwOUsyuUr8XPkBTgA_0iGrECaC' }}
-        run: npm run build
+        run: |
+          npm run build
+          npm run prepare:dist
 
       - name: Package Windows EXE
-        run: npx electron-builder --config electron-builder.json --win --x64
+        run: npx electron-builder --config electron-builder.json --win --x64 --publish never
 
       - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4

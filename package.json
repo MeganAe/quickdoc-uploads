@@ -1,5 +1,8 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "quickdoc-upload",
+  "version": "1.0.0",
+  "description": "Portail documents et gestion de fichiers",
+  "author": "QuickDoc Team",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -11,6 +14,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "prepare:dist": "node scripts/prepare-dist.js",
     "electron:build": "electron-builder --config electron-builder.json"
   },
   "overrides": {
