@@ -1,39 +1,38 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
-      throw redirect({
-        to: "/auth",
-      });
-    }
-  },
   component: AuthenticatedLayout,
 });
 
 function AuthenticatedLayout() {
+  const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      setAuthed(Boolean(data.session));
+      if (data.session) {
+        setAuthed(true);
+      } else {
+        navigate({ to: "/auth", replace: true });
+      }
       setChecking(false);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthed(Boolean(session));
-      if (!session) {
-        window.location.href = "/auth";
+      if (session) {
+        setAuthed(true);
+      } else {
+        setAuthed(false);
+        navigate({ to: "/auth", replace: true });
       }
     });
 
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   if (checking) {
     return (

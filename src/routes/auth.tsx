@@ -374,18 +374,21 @@ function Field({
 }) {
   return (
     <div>
-      <Label htmlFor={id} className="text-xs font-medium">
+      <Label htmlFor={id} className="text-xs font-medium cursor-pointer">
         {label}
       </Label>
-      <div className="mt-1 flex items-center gap-2 rounded-md border border-input bg-card px-3 focus-within:ring-2 focus-within:ring-ring">
-        <Icon className="size-4 shrink-0 text-muted-foreground" />
+      <div
+        onClick={() => document.getElementById(id)?.focus()}
+        className="mt-1 flex items-center gap-2 rounded-md border border-input bg-card px-3 cursor-text focus-within:ring-2 focus-within:ring-ring"
+      >
+        <Icon className="size-4 shrink-0 text-muted-foreground pointer-events-none select-none" />
         <Input
           id={id}
           type={type}
           value={value}
           autoComplete={autoComplete}
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+          className="h-11 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus:outline-none"
         />
       </div>
     </div>
