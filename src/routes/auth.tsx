@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Mail, Lock, User as UserIcon, ArrowRight, CheckCircle2, FileText } from "lucide-react";
+import { Loader2, Mail, Lock, User as UserIcon, ArrowRight, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -166,21 +166,8 @@ function AuthPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-sm">
-        {/* Logo + Branding */}
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
-            <FileText className="size-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Portail documents</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Vos fichiers, classés et accessibles partout.
-          </p>
-        </div>
-
-        {/* Card */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-black/5">
-          {pendingConfirm ? (
+      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-card">
+        {pendingConfirm ? (
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
@@ -324,11 +311,6 @@ function AuthPage() {
               )}
             </div>
           )}
-        </div>
-
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          En continuant, vous acceptez nos conditions d'utilisation.
-        </p>
       </div>
     </main>
   );
