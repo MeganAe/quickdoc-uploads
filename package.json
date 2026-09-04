@@ -15,8 +15,9 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "icons:generate": "node scripts/generate-icons.js",
     "prepare:dist": "node scripts/prepare-dist.js",
-    "electron:build": "electron-builder --config electron-builder.json"
+    "electron:build": "npm run icons:generate && electron-builder --config electron-builder.json"
   },
   "overrides": {
     "rolldown": "1.2.1"
@@ -91,7 +92,9 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "nitro": "3.0.260603-beta",
+    "png-to-ico": "^3.0.2",
     "prettier": "^3.7.3",
+    "sharp": "^0.35.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5"
