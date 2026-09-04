@@ -11,6 +11,7 @@ import {
   File,
   Star,
   Loader2,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,12 +29,12 @@ import { formatBytes, type Doc } from "@/lib/docs-store";
 import { useDeleteDocument, useToggleFavorite } from "@/lib/data";
 import { DocPreviewDialog } from "@/components/DocPreviewDialog";
 
-const TINTS: Record<string, string> = {
-  Cours: "bg-[#F3E8FF] text-[#7C3AED]",
-  "Relevés de notes": "bg-[#FEF3C7] text-[#D97706]",
-  Projets: "bg-[#E0F2FE] text-[#0284C7]",
-  Administratif: "bg-[#D1FAE5] text-[#059669]",
-  Autre: "bg-[#FFE4E6] text-[#E11D48]",
+const TINTS: Record<string, { bg: string; text: string; ring: string }> = {
+  Cours: { bg: "bg-violet-100 dark:bg-violet-900/30", text: "text-violet-700 dark:text-violet-300", ring: "ring-violet-200 dark:ring-violet-800" },
+  "Relevés de notes": { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", ring: "ring-amber-200 dark:ring-amber-800" },
+  Projets: { bg: "bg-sky-100 dark:bg-sky-900/30", text: "text-sky-700 dark:text-sky-300", ring: "ring-sky-200 dark:ring-sky-800" },
+  Administratif: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-300", ring: "ring-emerald-200 dark:ring-emerald-800" },
+  Autre: { bg: "bg-rose-100 dark:bg-rose-900/30", text: "text-rose-700 dark:text-rose-300", ring: "ring-rose-200 dark:ring-rose-800" },
 };
 
 function iconFor(format: string) {
@@ -43,6 +44,15 @@ function iconFor(format: string) {
   if (["zip", "rar", "7z", "tar", "gz"].includes(f)) return FileArchive;
   if (["pdf", "doc", "docx", "txt", "ppt", "pptx", "xls", "xlsx"].includes(f)) return FileText;
   return File;
+}
+
+function formatDate(dateStr?: string) {
+  if (!dateStr) return "";
+  return new Date(dateStr).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function DocCard({
@@ -63,7 +73,6 @@ export function DocCard({
   const Icon = iconFor(doc.format);
   const tint = TINTS[doc.category] ?? TINTS["Autre"];
 
-  // Support both snake_case (Supabase) and camelCase (legacy local store)
   const docAny = doc as Record<string, unknown>;
   const createdDate = (docAny["created_at"] ?? docAny["createdAt"]) as string | undefined;
 
@@ -91,131 +100,153 @@ export function DocCard({
 
   return (
     <>
-      <article className="group relative flex flex-col rounded-2xl border border-border bg-card p-4 shadow-card transition-all hover:border-primary/30 hover:shadow-float">
-        {/* Top row: Icon + Info + Favorite toggle */}
-        <div className="flex items-start gap-3">
-          <button
-            type="button"
-            onClick={() => setPreviewOpen(true)}
-            aria-label="Prévisualiser le document"
-            className={`flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl transition-transform hover:scale-105 ${tint}`}
-          >
-            <Icon className="size-5" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <h3
+      <article
+        className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-card transition-all duration-200 hover:shadow-float hover:border-primary/20 hover:-translate-y-0.5"
+      >
+        {/* Color accent stripe */}
+        <div className={`h-1 w-full ${tint.bg}`} />
+
+        <div className="flex flex-col flex-1 p-4">
+          {/* Top row: Icon + Info + Favorite toggle */}
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
               onClick={() => setPreviewOpen(true)}
-              className="cursor-pointer truncate text-sm font-semibold text-foreground hover:text-primary transition-colors"
-              title={doc.title}
+              aria-label="Prévisualiser le document"
+              className={`flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl ring-1 transition-transform hover:scale-105 ${tint.bg} ${tint.text} ${tint.ring}`}
             >
-              {doc.title}
-            </h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {doc.category} · {doc.format ? doc.format.toUpperCase() + " · " : ""}
-              {formatBytes(doc.bytes)}
-            </p>
-            {createdDate && (
-              <p className="text-[11px] text-muted-foreground/80 mt-0.5">
-                {new Date(createdDate).toLocaleDateString("fr-FR", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </p>
-            )}
+              <Icon className="size-5" />
+            </button>
+
+            <div className="min-w-0 flex-1">
+              <h3
+                onClick={() => setPreviewOpen(true)}
+                className="cursor-pointer truncate text-sm font-semibold text-foreground hover:text-primary transition-colors leading-tight"
+                title={doc.title}
+              >
+                {doc.title}
+              </h3>
+              <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${tint.bg} ${tint.text}`}>
+                  {doc.category}
+                </span>
+                {doc.format && (
+                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                    {doc.format}
+                  </span>
+                )}
+                <span className="text-[10px] text-muted-foreground">
+                  {formatBytes(doc.bytes)}
+                </span>
+              </div>
+              {createdDate && (
+                <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                  {formatDate(createdDate)}
+                </p>
+              )}
+            </div>
+
+            {/* Favorite Star Button */}
+            <button
+              type="button"
+              aria-label={doc.is_favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+              disabled={isFavoriting}
+              onClick={handleToggleStar}
+              className="shrink-0 p-1.5 rounded-full transition-transform active:scale-90 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+            >
+              {isFavoriting ? (
+                <Loader2 className="size-4 animate-spin text-muted-foreground" />
+              ) : (
+                <Star
+                  className={`size-4 transition-colors ${
+                    doc.is_favorite
+                      ? "fill-amber-400 text-amber-500"
+                      : "text-muted-foreground/40 hover:text-amber-400"
+                  }`}
+                />
+              )}
+            </button>
           </div>
 
-          {/* Favorite Star Button */}
-          <Button
-            size="icon"
-            variant="ghost"
-            aria-label={doc.is_favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-            disabled={isFavoriting}
-            onClick={handleToggleStar}
-            className="size-8 shrink-0 rounded-full transition-transform active:scale-90"
-          >
-            {isFavoriting ? (
-              <Loader2 className="size-4 animate-spin text-muted-foreground" />
-            ) : (
-              <Star
-                className={`size-4 transition-colors ${
-                  doc.is_favorite
-                    ? "fill-amber-400 text-amber-500"
-                    : "text-muted-foreground/60 hover:text-amber-500"
-                }`}
-              />
-            )}
-          </Button>
-        </div>
+          {/* Action buttons */}
+          <div className="mt-4 flex items-center gap-2 pt-3 border-t border-border/50">
+            <Button
+              size="sm"
+              className="rounded-xl font-semibold gap-1.5 h-8 text-xs flex-1"
+              onClick={() => setPreviewOpen(true)}
+            >
+              <Eye className="size-3.5" />
+              Aperçu
+            </Button>
 
-        {/* Action buttons */}
-        <div className="mt-4 flex items-center gap-2 pt-2 border-t border-border/60">
-          <Button
-            size="sm"
-            className="rounded-full font-semibold gap-1.5 h-8 text-xs"
-            onClick={() => setPreviewOpen(true)}
-          >
-            <Eye className="size-3.5" />
-            Aperçu
-          </Button>
+            <button
+              type="button"
+              title="Copier le lien"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await navigator.clipboard.writeText(doc.url);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
+              className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground hover:border-primary/30 hover:text-primary transition-colors"
+            >
+              {copied ? (
+                <Check className="size-3.5 text-emerald-600" />
+              ) : (
+                <Copy className="size-3.5" />
+              )}
+            </button>
 
-          <Button
-            size="sm"
-            variant="secondary"
-            className="rounded-full h-8 text-xs gap-1.5"
-            onClick={async (e) => {
-              e.stopPropagation();
-              await navigator.clipboard.writeText(doc.url);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1500);
-            }}
-          >
-            {copied ? (
-              <Check className="size-3.5 text-emerald-600" />
-            ) : (
-              <Copy className="size-3.5" />
-            )}
-            {copied ? "Copié" : "Copier"}
-          </Button>
+            <a
+              href={doc.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              download
+              onClick={(e) => e.stopPropagation()}
+              title="Télécharger"
+              className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground hover:border-primary/30 hover:text-primary transition-colors"
+            >
+              <Download className="size-3.5" />
+            </a>
 
-          {/* Delete with confirmation dialog */}
-          <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-            <AlertDialogTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="Supprimer le document"
-                disabled={isDeleting}
-                className="ml-auto size-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-              >
-                {isDeleting ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="size-3.5" />
-                )}
-              </Button>
-            </AlertDialogTrigger>
-
-            <AlertDialogContent className="max-w-sm rounded-2xl">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Supprimer ce document ?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Le document{" "}
-                  <span className="font-semibold text-foreground">« {doc.title} »</span> sera
-                  définitivement supprimé. Cette action est irréversible.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="gap-2">
-                <AlertDialogCancel className="rounded-full">Annuler</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleConfirmDelete}
-                  className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            {/* Delete with confirmation dialog */}
+            <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Supprimer le document"
+                  disabled={isDeleting}
+                  className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground hover:border-destructive/30 hover:bg-destructive/5 hover:text-destructive transition-colors"
                 >
-                  Supprimer
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {isDeleting ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-3.5" />
+                  )}
+                </button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent className="max-w-sm rounded-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Supprimer ce document ?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Le document{" "}
+                    <span className="font-semibold text-foreground">« {doc.title} »</span> sera
+                    définitivement supprimé. Cette action est irréversible.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="gap-2">
+                  <AlertDialogCancel className="rounded-xl">Annuler</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleConfirmDelete}
+                    className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Supprimer
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </article>
 

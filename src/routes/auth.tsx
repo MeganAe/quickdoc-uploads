@@ -1,10 +1,9 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Loader2, Mail, Lock, User as UserIcon, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, Lock, User as UserIcon, ArrowRight, CheckCircle2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -12,19 +11,12 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Connexion et inscription — Portail documents" },
+      { title: "Connexion — Portail documents" },
       {
         name: "description",
         content:
           "Créez votre compte ou connectez-vous pour envoyer, classer et retrouver vos documents en ligne.",
       },
-      { property: "og:title", content: "Connexion — Portail documents" },
-      {
-        property: "og:description",
-        content: "Créez votre compte ou connectez-vous pour gérer vos documents.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,
@@ -39,12 +31,11 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [loading, setLoading] = useState<null | "login" | "signup" | "google" | "reset">(null);
+  const [loading, setLoading] = useState<null | "login" | "signup" | "reset">(null);
   const [checking, setChecking] = useState(true);
   const [pendingConfirm, setPendingConfirm] = useState(false);
 
   useEffect(() => {
-    // Check for existing session on mount
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         navigate({ to: "/dashboard", replace: true });
@@ -53,10 +44,8 @@ function AuthPage() {
       }
     });
 
-    // Listen for auth changes, but only navigate if we're not in a "pendingConfirm" state
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
-        // Only auto-redirect if email was confirmed (session has access_token and user is confirmed)
         const user = session.user;
         const isConfirmed =
           user.email_confirmed_at !== null || user.confirmed_at !== null;
@@ -98,7 +87,6 @@ function AuthPage() {
       return;
     }
     toast.success("Connexion réussie");
-    // navigation handled by onAuthStateChange
   }
 
   async function signUp(e: React.FormEvent) {
@@ -121,7 +109,6 @@ function AuthPage() {
         return;
       }
 
-      // User already exists (identities empty) → ask to login
       if (
         data.user &&
         data.user.identities !== undefined &&
@@ -134,7 +121,6 @@ function AuthPage() {
         return;
       }
 
-      // Email confirmation required
       if (!data.session) {
         setPendingConfirm(true);
         toast.success("Compte créé !", {
@@ -142,7 +128,6 @@ function AuthPage() {
           duration: 6000,
         });
       } else {
-        // Auto-confirmed (e.g. local dev or disabled email confirmation)
         toast.success("Compte créé et connexion établie !");
         navigate({ to: "/dashboard", replace: true });
       }
@@ -152,21 +137,6 @@ function AuthPage() {
     } finally {
       setLoading(null);
     }
-  }
-
-  async function google() {
-    setLoading("google");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(null);
-      toast.error("Google indisponible", { description: result.error.message });
-      return;
-    }
-    if (result.redirected) return;
-    toast.success("Connexion réussie");
-    navigate({ to: "/dashboard", replace: true });
   }
 
   async function resetPassword() {
@@ -189,179 +159,175 @@ function AuthPage() {
 
   if (checking)
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="size-6 animate-spin text-primary" />
       </div>
     );
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-float">
-        <h1 className="text-lg font-bold tracking-tight">Portail documents</h1>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Vos fichiers, classés et accessibles partout.
-        </p>
-
-        {pendingConfirm ? (
-          <div className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">Vérifiez votre boîte mail</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Un lien de confirmation a été envoyé à{" "}
-                  <span className="font-medium text-foreground">{email}</span>. Cliquez dessus pour
-                  activer votre compte.
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="secondary"
-              className="mt-4 h-10 w-full rounded-full text-sm font-semibold"
-              onClick={() => {
-                setPendingConfirm(false);
-                setMode("login");
-                setPassword("");
-              }}
-            >
-              Retour à la connexion
-            </Button>
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+      <div className="w-full max-w-sm">
+        {/* Logo + Branding */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/25">
+            <FileText className="size-8 text-primary-foreground" />
           </div>
-        ) : (
-          <div className="mt-5">
-            <div className="grid w-full grid-cols-2 rounded-full bg-muted p-1 text-muted-foreground">
-              <button
-                type="button"
-                onClick={() => setMode("login")}
-                className={`rounded-full py-1.5 text-xs font-semibold transition-all ${
-                  mode === "login"
-                    ? "bg-background text-foreground shadow"
-                    : "hover:text-foreground"
-                }`}
-              >
-                Connexion
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("signup")}
-                className={`rounded-full py-1.5 text-xs font-semibold transition-all ${
-                  mode === "signup"
-                    ? "bg-background text-foreground shadow"
-                    : "hover:text-foreground"
-                }`}
-              >
-                Inscription
-              </button>
-            </div>
-
-            {mode === "login" ? (
-              <form onSubmit={signIn} className="mt-4 space-y-3">
-                <Field
-                  id="login-email"
-                  label="Adresse e-mail"
-                  icon={Mail}
-                  type="email"
-                  value={email}
-                  onChange={setEmail}
-                  autoComplete="email"
-                />
-                <Field
-                  id="login-password"
-                  label="Mot de passe"
-                  icon={Lock}
-                  type="password"
-                  value={password}
-                  onChange={setPassword}
-                  autoComplete="current-password"
-                />
-                <Button
-                  type="submit"
-                  disabled={loading !== null}
-                  className="h-11 w-full rounded-full font-semibold"
-                >
-                  {loading === "login" ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <ArrowRight className="size-4" />
-                  )}
-                  Se connecter
-                </Button>
-                <button
-                  type="button"
-                  onClick={resetPassword}
-                  disabled={loading !== null}
-                  className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
-                >
-                  {loading === "reset" ? "Envoi…" : "Mot de passe oublié ?"}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={signUp} className="mt-4 space-y-3">
-                <Field
-                  id="signup-name"
-                  label="Nom complet"
-                  icon={UserIcon}
-                  type="text"
-                  value={fullName}
-                  onChange={setFullName}
-                  autoComplete="name"
-                />
-                <Field
-                  id="signup-email"
-                  label="Adresse e-mail"
-                  icon={Mail}
-                  type="email"
-                  value={email}
-                  onChange={setEmail}
-                  autoComplete="email"
-                />
-                <Field
-                  id="signup-password"
-                  label="Mot de passe"
-                  icon={Lock}
-                  type="password"
-                  value={password}
-                  onChange={setPassword}
-                  autoComplete="new-password"
-                />
-                <Button
-                  type="submit"
-                  disabled={loading !== null}
-                  className="h-11 w-full rounded-full font-semibold"
-                >
-                  {loading === "signup" ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <ArrowRight className="size-4" />
-                  )}
-                  Créer mon compte
-                </Button>
-              </form>
-            )}
-          </div>
-        )}
-
-        <div className="my-4 flex items-center gap-3">
-          <span className="h-px flex-1 bg-border" />
-          <span className="text-[11px] text-muted-foreground">ou</span>
-          <span className="h-px flex-1 bg-border" />
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Portail documents</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Vos fichiers, classés et accessibles partout.
+          </p>
         </div>
 
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={loading !== null}
-          onClick={google}
-          className="h-11 w-full rounded-full font-semibold"
-        >
-          {loading === "google" ? <Loader2 className="size-4 animate-spin" /> : null}
-          Continuer avec Google
-        </Button>
+        {/* Card */}
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-xl shadow-black/5">
+          {pendingConfirm ? (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Vérifiez votre boîte mail</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Un lien de confirmation a été envoyé à{" "}
+                    <span className="font-medium text-foreground">{email}</span>. Cliquez dessus
+                    pour activer votre compte.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="secondary"
+                className="mt-4 h-10 w-full rounded-xl text-sm font-semibold"
+                onClick={() => {
+                  setPendingConfirm(false);
+                  setMode("login");
+                  setPassword("");
+                }}
+              >
+                Retour à la connexion
+              </Button>
+            </div>
+          ) : (
+            <div>
+              {/* Tab Switcher */}
+              <div className="grid w-full grid-cols-2 rounded-xl bg-muted p-1 text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => setMode("login")}
+                  className={`rounded-lg py-2 text-sm font-semibold transition-all ${
+                    mode === "login"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "hover:text-foreground"
+                  }`}
+                >
+                  Connexion
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("signup")}
+                  className={`rounded-lg py-2 text-sm font-semibold transition-all ${
+                    mode === "signup"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "hover:text-foreground"
+                  }`}
+                >
+                  Inscription
+                </button>
+              </div>
 
-        <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          <Link to="/reset-password" className="underline-offset-4 hover:underline">
-            Changer mon mot de passe
-          </Link>
+              {mode === "login" ? (
+                <form onSubmit={signIn} className="mt-5 space-y-4">
+                  <Field
+                    id="login-email"
+                    label="Adresse e-mail"
+                    icon={Mail}
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    autoComplete="email"
+                    placeholder="vous@example.com"
+                  />
+                  <Field
+                    id="login-password"
+                    label="Mot de passe"
+                    icon={Lock}
+                    type="password"
+                    value={password}
+                    onChange={setPassword}
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={loading !== null}
+                    className="h-11 w-full rounded-xl font-semibold"
+                  >
+                    {loading === "login" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <ArrowRight className="size-4" />
+                    )}
+                    Se connecter
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={resetPassword}
+                    disabled={loading !== null}
+                    className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline hover:text-foreground transition-colors"
+                  >
+                    {loading === "reset" ? "Envoi…" : "Mot de passe oublié ?"}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={signUp} className="mt-5 space-y-4">
+                  <Field
+                    id="signup-name"
+                    label="Nom complet"
+                    icon={UserIcon}
+                    type="text"
+                    value={fullName}
+                    onChange={setFullName}
+                    autoComplete="name"
+                    placeholder="Jean Dupont"
+                  />
+                  <Field
+                    id="signup-email"
+                    label="Adresse e-mail"
+                    icon={Mail}
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    autoComplete="email"
+                    placeholder="vous@example.com"
+                  />
+                  <Field
+                    id="signup-password"
+                    label="Mot de passe"
+                    icon={Lock}
+                    type="password"
+                    value={password}
+                    onChange={setPassword}
+                    autoComplete="new-password"
+                    placeholder="6 caractères minimum"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={loading !== null}
+                    className="h-11 w-full rounded-xl font-semibold"
+                  >
+                    {loading === "signup" ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <ArrowRight className="size-4" />
+                    )}
+                    Créer mon compte
+                  </Button>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
+
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          En continuant, vous acceptez nos conditions d'utilisation.
         </p>
       </div>
     </main>
@@ -376,6 +342,7 @@ function Field({
   value,
   onChange,
   autoComplete,
+  placeholder,
 }: {
   id: string;
   label: string;
@@ -384,10 +351,11 @@ function Field({
   value: string;
   onChange: (v: string) => void;
   autoComplete?: string;
+  placeholder?: string;
 }) {
   return (
-    <div className="space-y-1">
-      <Label htmlFor={id} className="text-xs font-medium cursor-pointer">
+    <div className="space-y-1.5">
+      <Label htmlFor={id} className="text-sm font-medium cursor-pointer">
         {label}
       </Label>
       <div className="relative flex items-center">
@@ -396,11 +364,12 @@ function Field({
           id={id}
           type={type}
           value={value}
+          placeholder={placeholder}
           autoComplete={autoComplete}
           autoCapitalize={type === "email" ? "none" : undefined}
           autoCorrect="off"
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 w-full rounded-md border border-input bg-card pl-10 pr-3 text-sm focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-11 w-full rounded-xl border border-input bg-background pl-10 pr-3 text-sm focus-visible:ring-2 focus-visible:ring-primary/50"
         />
       </div>
     </div>
