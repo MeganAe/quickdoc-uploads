@@ -1,11 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { Files, HardDrive, Star, Bell, ArrowRight, FolderOpen } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  Files,
+  HardDrive,
+  Star,
+  Bell,
+  ArrowRight,
+  FolderOpen,
+  ArrowLeft,
+  Folder,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { UploadPanel } from "@/components/UploadPanel";
 import { DocCard } from "@/components/DocCard";
 import { useDocuments, useNotifications } from "@/lib/data";
-import { formatBytes } from "@/lib/docs-store";
+import { formatBytes, CATEGORIES } from "@/lib/docs-store";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -21,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardPage() {
   const { data: docs = [], isLoading } = useDocuments();
   const { data: notifications = [] } = useNotifications();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const stats = useMemo(() => {
     const totalBytes = docs.reduce((acc, doc) => acc + (doc.bytes || 0), 0);
@@ -34,6 +44,23 @@ function DashboardPage() {
       unreadNotifications,
     };
   }, [docs, notifications]);
+
+  // Groupement des documents par catégorie pour les dossiers
+  const folders = useMemo(() => {
+    return CATEGORIES.map((cat) => {
+      const catDocs = docs.filter((d) => d.category === cat);
+      return {
+        name: cat,
+        count: catDocs.length,
+      };
+    });
+  }, [docs]);
+
+  // Documents du dossier sélectionné
+  const categoryDocs = useMemo(() => {
+    if (!selectedCategory) return [];
+    return docs.filter((d) => d.category === selectedCategory);
+  }, [docs, selectedCategory]);
 
   const recentDocs = useMemo(() => {
     return [...docs]
@@ -66,7 +93,10 @@ function DashboardPage() {
             <p className="mt-2 text-2xl font-bold tracking-tight">{stats.totalSize}</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+          <Link
+            to="/favorites"
+            className="rounded-2xl border border-border bg-card p-4 shadow-card hover:border-amber-500/40 transition-colors"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Favoris</span>
               <div className="flex size-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
@@ -74,9 +104,12 @@ function DashboardPage() {
               </div>
             </div>
             <p className="mt-2 text-2xl font-bold tracking-tight">{stats.favoritesCount}</p>
-          </div>
+          </Link>
 
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+          <Link
+            to="/notifications"
+            className="rounded-2xl border border-border bg-card p-4 shadow-card hover:border-rose-500/40 transition-colors"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-muted-foreground">Alertes</span>
               <div className="flex size-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
@@ -84,7 +117,80 @@ function DashboardPage() {
               </div>
             </div>
             <p className="mt-2 text-2xl font-bold tracking-tight">{stats.unreadNotifications}</p>
+          </Link>
+        </div>
+
+        {/* Section Dossiers */}
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">
+              {selectedCategory ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory(null)}
+                  className="flex items-center gap-1.5 text-primary hover:underline"
+                >
+                  <ArrowLeft className="size-4" />
+                  Dossier : {selectedCategory}
+                </button>
+              ) : (
+                "Mes Dossiers"
+              )}
+            </h2>
+            {selectedCategory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-muted-foreground"
+                onClick={() => setSelectedCategory(null)}
+              >
+                Tous les dossiers
+              </Button>
+            )}
           </div>
+
+          {selectedCategory ? (
+            /* Affichage des fichiers du dossier sélectionné */
+            categoryDocs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
+                <FolderOpen className="size-8 text-muted-foreground/60" />
+                <p className="mt-2 text-sm font-medium text-foreground">
+                  Aucun document dans « {selectedCategory} »
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Ajoutez un document ci-dessous dans cette catégorie pour le retrouver ici
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {categoryDocs.map((doc) => (
+                  <DocCard key={doc.id} doc={doc} />
+                ))}
+              </div>
+            )
+          ) : (
+            /* Grille sobre des dossiers par catégorie */
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+              {folders.map((f) => (
+                <button
+                  key={f.name}
+                  type="button"
+                  onClick={() => setSelectedCategory(f.name)}
+                  className="group flex flex-col items-start rounded-xl border border-border bg-card p-3.5 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow hover:-translate-y-0.5"
+                >
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2.5 transition-transform group-hover:scale-105">
+                    <Folder className="size-4.5" />
+                  </div>
+                  <span className="truncate w-full text-xs font-semibold text-foreground" title={f.name}>
+                    {f.name}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground mt-0.5">
+                    {f.count} document{f.count > 1 ? "s" : ""}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Upload Panel */}
@@ -94,38 +200,44 @@ function DashboardPage() {
         </div>
 
         {/* Recent Documents */}
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">Documents récents</h2>
-            {docs.length > 4 && (
-              <Button asChild variant="ghost" size="sm" className="gap-1 text-xs text-primary">
-                <Link to="/documents">
-                  Voir tout <ArrowRight className="size-3" />
-                </Link>
-              </Button>
+        {!selectedCategory && (
+          <div>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground">Documents récents</h2>
+              {docs.length > 4 && (
+                <Button asChild variant="ghost" size="sm" className="gap-1 text-xs text-primary">
+                  <Link to="/documents">
+                    Voir tout <ArrowRight className="size-3" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+
+            {isLoading ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[1, 2].map((n) => (
+                  <div key={n} className="h-32 animate-pulse rounded-2xl bg-card/60" />
+                ))}
+              </div>
+            ) : recentDocs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
+                <FolderOpen className="size-10 text-muted-foreground/60" />
+                <p className="mt-2 text-sm font-medium text-foreground">
+                  Aucun document pour le moment
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Envoyez votre premier fichier ci-dessus
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {recentDocs.map((doc) => (
+                  <DocCard key={doc.id} doc={doc} />
+                ))}
+              </div>
             )}
           </div>
-
-          {isLoading ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {[1, 2].map((n) => (
-                <div key={n} className="h-32 animate-pulse rounded-2xl bg-card/60" />
-              ))}
-            </div>
-          ) : recentDocs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/50 p-8 text-center">
-              <FolderOpen className="size-10 text-muted-foreground/60" />
-              <p className="mt-2 text-sm font-medium text-foreground">Aucun document pour le moment</p>
-              <p className="text-xs text-muted-foreground">Envoyez votre premier fichier ci-dessus</p>
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {recentDocs.map((doc) => (
-                <DocCard key={doc.id} doc={doc} />
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </AppShell>
   );
