@@ -28,7 +28,6 @@ import {
 import { formatBytes, type Doc } from "@/lib/docs-store";
 import { useDeleteDocument, useToggleFavorite } from "@/lib/data";
 import { DocPreviewDialog } from "@/components/DocPreviewDialog";
-import { MaterialFileIcon } from "@/components/MaterialFileIcon";
 
 const DEFAULT_TINT = {
   bg: "bg-rose-100 dark:bg-rose-900/30",
@@ -120,9 +119,9 @@ export function DocCard({
               type="button"
               onClick={() => setPreviewOpen(true)}
               aria-label="Prévisualiser le document"
-              className="shrink-0 cursor-pointer transition-transform hover:scale-105"
+              className={`flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl ring-1 transition-transform hover:scale-105 ${tint.bg} ${tint.text} ${tint.ring}`}
             >
-              <MaterialFileIcon format={doc.format} title={doc.title} size="md" />
+              <Icon className="size-5" />
             </button>
 
             <div className="min-w-0 flex-1">
