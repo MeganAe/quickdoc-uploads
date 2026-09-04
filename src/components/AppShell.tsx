@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, FolderOpen, Bell, User, Star } from "lucide-react";
+import { Home, FolderOpen, Bell, User, Star, Info } from "lucide-react";
 import { useNotifications, useProfile } from "@/lib/data";
 
 const TABS = [
@@ -53,20 +53,30 @@ export function AppShell({
 
           {/* Avatar ou slot droit */}
           {headerRight ?? (
-            <Link
-              to="/profile"
-              className="flex shrink-0 size-10 items-center justify-center rounded-full bg-white/20 ring-2 ring-white/30 hover:bg-white/30 transition-colors overflow-hidden"
-            >
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt="Profil"
-                  className="size-10 object-cover"
-                />
-              ) : (
-                <User className="size-5 text-primary-foreground" />
-              )}
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/about"
+                title="À propos de l'application"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-primary-foreground backdrop-blur-sm ring-1 ring-white/20 hover:bg-white/25 transition-all hover:scale-105"
+              >
+                <Info className="size-5" />
+              </Link>
+              <Link
+                to="/profile"
+                title="Mon profil"
+                className="flex shrink-0 size-10 items-center justify-center rounded-full bg-white/20 ring-2 ring-white/30 hover:bg-white/30 transition-all hover:scale-105 overflow-hidden"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="Profil"
+                    className="size-10 object-cover"
+                  />
+                ) : (
+                  <User className="size-5 text-primary-foreground" />
+                )}
+              </Link>
+            </div>
           )}
         </div>
       </header>

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UploadCloud, Loader2, CheckCircle2, FileUp } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,14 +17,24 @@ import { pushNotification } from "@/lib/data";
 export function UploadPanel({
   onAdd,
   onDone,
+  defaultCategory,
 }: {
   onAdd?: (doc: Doc) => void;
   onDone?: () => void;
+  defaultCategory?: string | undefined;
 }) {
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<Category>("Autre");
+  const [category, setCategory] = useState<Category>(
+    (defaultCategory as Category) || "Autre"
+  );
+
+  useEffect(() => {
+    if (defaultCategory && (CATEGORIES as readonly string[]).includes(defaultCategory)) {
+      setCategory(defaultCategory as Category);
+    }
+  }, [defaultCategory]);
   const [dragging, setDragging] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [currentFileName, setCurrentFileName] = useState<string>("");

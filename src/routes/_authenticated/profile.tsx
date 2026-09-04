@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -10,6 +10,8 @@ import {
   LogOut,
   Loader2,
   Camera,
+  Info,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -253,6 +255,27 @@ function ProfilePage() {
               Enregistrer les modifications
             </Button>
           </form>
+        </div>
+
+        {/* About App & Creator Card */}
+        <div className="rounded-2xl border border-primary/20 bg-card p-5 shadow-card transition-all hover:border-primary/40">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Info className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-semibold text-foreground truncate">À propos de l'application</h3>
+                <p className="text-xs text-muted-foreground truncate">Créée par Metoushela Walker · v1.0.0</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="rounded-full text-xs gap-1.5 shrink-0">
+              <Link to="/about">
+                Découvrir
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Account Actions */}

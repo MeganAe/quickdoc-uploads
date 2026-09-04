@@ -28,13 +28,20 @@ import {
 import { formatBytes, type Doc } from "@/lib/docs-store";
 import { useDeleteDocument, useToggleFavorite } from "@/lib/data";
 import { DocPreviewDialog } from "@/components/DocPreviewDialog";
+import { MaterialFileIcon } from "@/components/MaterialFileIcon";
+
+const DEFAULT_TINT = {
+  bg: "bg-rose-100 dark:bg-rose-900/30",
+  text: "text-rose-700 dark:text-rose-300",
+  ring: "ring-rose-200 dark:ring-rose-800",
+};
 
 const TINTS: Record<string, { bg: string; text: string; ring: string }> = {
   Cours: { bg: "bg-violet-100 dark:bg-violet-900/30", text: "text-violet-700 dark:text-violet-300", ring: "ring-violet-200 dark:ring-violet-800" },
   "Relevés de notes": { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300", ring: "ring-amber-200 dark:ring-amber-800" },
   Projets: { bg: "bg-sky-100 dark:bg-sky-900/30", text: "text-sky-700 dark:text-sky-300", ring: "ring-sky-200 dark:ring-sky-800" },
   Administratif: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-300", ring: "ring-emerald-200 dark:ring-emerald-800" },
-  Autre: { bg: "bg-rose-100 dark:bg-rose-900/30", text: "text-rose-700 dark:text-rose-300", ring: "ring-rose-200 dark:ring-rose-800" },
+  Autre: DEFAULT_TINT,
 };
 
 function iconFor(format: string) {
@@ -71,7 +78,7 @@ export function DocCard({
   const favoriteMutation = useToggleFavorite();
 
   const Icon = iconFor(doc.format);
-  const tint = TINTS[doc.category] ?? TINTS["Autre"];
+  const tint = TINTS[doc.category] ?? DEFAULT_TINT;
 
   const docAny = doc as Record<string, unknown>;
   const createdDate = (docAny["created_at"] ?? docAny["createdAt"]) as string | undefined;
@@ -113,9 +120,9 @@ export function DocCard({
               type="button"
               onClick={() => setPreviewOpen(true)}
               aria-label="Prévisualiser le document"
-              className={`flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl ring-1 transition-transform hover:scale-105 ${tint.bg} ${tint.text} ${tint.ring}`}
+              className="shrink-0 cursor-pointer transition-transform hover:scale-105"
             >
-              <Icon className="size-5" />
+              <MaterialFileIcon format={doc.format} title={doc.title} size="md" />
             </button>
 
             <div className="min-w-0 flex-1">
