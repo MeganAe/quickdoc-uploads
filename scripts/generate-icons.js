@@ -12,15 +12,17 @@ if (!fs.existsSync(logoPath)) {
   throw new Error(`Logo source not found: ${logoPath}`);
 }
 
-const sizes = [48, 72, 96, 144, 192, 256, 512];
+const icoSizes = [16, 32, 48, 256];
 const pngBuffers = await Promise.all(
-  sizes.map(async (size) => {
+  icoSizes.map(async (size) => {
     const buffer = await sharp(logoPath).resize(size, size).png().toBuffer();
-    if (size === 512) fs.writeFileSync(path.join(publicDir, "icon.png"), buffer);
     if (size === 256) fs.writeFileSync(path.join(publicDir, "icon-256.png"), buffer);
     return buffer;
   }),
 );
+
+const androidIcon = await sharp(logoPath).resize(512, 512).png().toBuffer();
+fs.writeFileSync(path.join(publicDir, "icon.png"), androidIcon);
 
 const ico = await pngToIco(pngBuffers);
 fs.writeFileSync(path.join(publicDir, "icon.ico"), ico);
