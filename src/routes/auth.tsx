@@ -8,7 +8,6 @@ import { lovable } from "@/integrations/lovable/index";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -229,17 +228,33 @@ function AuthPage() {
             </Button>
           </div>
         ) : (
-          <Tabs value={mode} onValueChange={setMode} className="mt-5">
-            <TabsList className="grid w-full grid-cols-2 rounded-full">
-              <TabsTrigger value="login" className="rounded-full text-xs font-semibold">
+          <div className="mt-5">
+            <div className="grid w-full grid-cols-2 rounded-full bg-muted p-1 text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className={`rounded-full py-1.5 text-xs font-semibold transition-all ${
+                  mode === "login"
+                    ? "bg-background text-foreground shadow"
+                    : "hover:text-foreground"
+                }`}
+              >
                 Connexion
-              </TabsTrigger>
-              <TabsTrigger value="signup" className="rounded-full text-xs font-semibold">
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className={`rounded-full py-1.5 text-xs font-semibold transition-all ${
+                  mode === "signup"
+                    ? "bg-background text-foreground shadow"
+                    : "hover:text-foreground"
+                }`}
+              >
                 Inscription
-              </TabsTrigger>
-            </TabsList>
+              </button>
+            </div>
 
-            <TabsContent value="login">
+            {mode === "login" ? (
               <form onSubmit={signIn} className="mt-4 space-y-3">
                 <Field
                   id="login-email"
@@ -280,9 +295,7 @@ function AuthPage() {
                   {loading === "reset" ? "Envoi…" : "Mot de passe oublié ?"}
                 </button>
               </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
+            ) : (
               <form onSubmit={signUp} className="mt-4 space-y-3">
                 <Field
                   id="signup-name"
@@ -324,8 +337,8 @@ function AuthPage() {
                   Créer mon compte
                 </Button>
               </form>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         )}
 
         <div className="my-4 flex items-center gap-3">
@@ -373,22 +386,21 @@ function Field({
   autoComplete?: string;
 }) {
   return (
-    <div>
+    <div className="space-y-1">
       <Label htmlFor={id} className="text-xs font-medium cursor-pointer">
         {label}
       </Label>
-      <div
-        onClick={() => document.getElementById(id)?.focus()}
-        className="mt-1 flex items-center gap-2 rounded-md border border-input bg-card px-3 cursor-text focus-within:ring-2 focus-within:ring-ring"
-      >
-        <Icon className="size-4 shrink-0 text-muted-foreground pointer-events-none select-none" />
+      <div className="relative flex items-center">
+        <Icon className="pointer-events-none absolute left-3.5 size-4 text-muted-foreground" />
         <Input
           id={id}
           type={type}
           value={value}
           autoComplete={autoComplete}
+          autoCapitalize={type === "email" ? "none" : undefined}
+          autoCorrect="off"
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 flex-1 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0 focus:outline-none"
+          className="h-11 w-full rounded-md border border-input bg-card pl-10 pr-3 text-sm focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
     </div>
