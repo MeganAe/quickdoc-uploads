@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   ExternalLink,
   Download,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { formatBytes, type Doc } from "@/lib/docs-store";
+import { downloadDocument } from "@/lib/desktop";
 
 function getCategoryIcon(format: string) {
   const f = (format || "").toLowerCase();
@@ -58,6 +60,16 @@ export function DocPreviewDialog({
   const activeViewerUrl = viewerType === "office" ? officeEmbedUrl : googleEmbedUrl;
   const Icon = getCategoryIcon(f);
 
+  async function handleDownload() {
+    try {
+      const extension = doc.format ? `.${doc.format}` : "";
+      const result = await downloadDocument(doc.url, `${doc.title}${extension}`);
+      if (result) toast.success("Document enregistré dans l'application", { description: result.fileName });
+    } catch (error) {
+      toast.error("Téléchargement impossible", { description: error instanceof Error ? error.message : "Erreur réseau" });
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[92vh] w-[95vw] p-4 sm:p-6 flex flex-col rounded-2xl gap-3 overflow-hidden">
@@ -89,11 +101,9 @@ export function DocPreviewDialog({
                 {viewerType === "google" ? "Vue Office" : "Vue Google"}
               </Button>
             )}
-            <Button asChild size="sm" variant="secondary" className="h-8 rounded-full text-xs gap-1.5">
-              <a href={doc.url} target="_blank" rel="noreferrer" download={doc.title}>
+            <Button size="sm" variant="secondary" className="h-8 rounded-full text-xs gap-1.5" onClick={() => void handleDownload()}>
                 <Download className="size-3.5" />
                 <span className="hidden sm:inline">Télécharger</span>
-              </a>
             </Button>
             <Button asChild size="sm" className="h-8 rounded-full text-xs gap-1.5">
               <a href={doc.url} target="_blank" rel="noreferrer">
@@ -182,11 +192,9 @@ export function DocPreviewDialog({
               <p className="text-xs text-muted-foreground mt-1 max-w-xs mx-auto">
                 Vous pouvez télécharger le document ou l'ouvrir avec votre application habituelle.
               </p>
-              <Button asChild className="mt-4 rounded-full gap-1.5" size="sm">
-                <a href={doc.url} target="_blank" rel="noreferrer">
+              <Button className="mt-4 rounded-full gap-1.5" size="sm" onClick={() => void handleDownload()}>
                   <Download className="size-4" />
                   Télécharger le fichier
-                </a>
               </Button>
             </div>
           )}

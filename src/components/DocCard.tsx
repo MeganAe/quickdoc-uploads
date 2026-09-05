@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Copy,
   Check,
@@ -28,6 +29,7 @@ import {
 import { formatBytes, type Doc } from "@/lib/docs-store";
 import { useDeleteDocument, useToggleFavorite } from "@/lib/data";
 import { DocPreviewDialog } from "@/components/DocPreviewDialog";
+import { downloadDocument } from "@/lib/desktop";
 
 const DEFAULT_TINT = {
   bg: "bg-rose-100 dark:bg-rose-900/30",
@@ -103,6 +105,16 @@ export function DocCard({
 
   const isFavoriting = favoriteMutation.isPending && favoriteMutation.variables?.id === doc.id;
   const isDeleting = deleteMutation.isPending && deleteMutation.variables === doc.id;
+
+  async function handleDownload() {
+    try {
+      const extension = doc.format ? `.${doc.format}` : "";
+      const result = await downloadDocument(doc.url, `${doc.title}${extension}`);
+      if (result) toast.success("Document enregistré dans l'application", { description: result.fileName });
+    } catch (error) {
+      toast.error("Téléchargement impossible", { description: error instanceof Error ? error.message : "Erreur réseau" });
+    }
+  }
 
   return (
     <>
@@ -203,17 +215,17 @@ export function DocCard({
               )}
             </button>
 
-            <a
-              href={doc.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              download
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                void handleDownload();
+              }}
               title="Télécharger"
               className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-muted-foreground hover:border-primary/30 hover:text-primary transition-colors"
             >
               <Download className="size-3.5" />
-            </a>
+            </button>
 
             {/* Delete with confirmation dialog */}
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
