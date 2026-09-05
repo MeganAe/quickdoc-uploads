@@ -59,6 +59,31 @@ ipcMain.handle("download-document", async (_event, { url, fileName }) => {
   return { path: destination, fileName: path.basename(destination) };
 });
 
+ipcMain.handle("list-local-documents", async () => {
+  const documentsDir = path.join(app.getPath("userData"), "documents");
+  await fs.promises.mkdir(documentsDir, { recursive: true });
+  const entries = await fs.promises.readdir(documentsDir, { withFileTypes: true });
+  return Promise.all(
+    entries
+      .filter((entry) => entry.isFile())
+      .map(async (entry) => {
+        const filePath = path.join(documentsDir, entry.name);
+        const stats = await fs.promises.stat(filePath);
+        return { fileName: entry.name, path: filePath, bytes: stats.size, modifiedAt: stats.mtime.toISOString() };
+      }),
+  );
+});
+
+ipcMain.handle("open-local-document", async (_event, filePath) => {
+  const documentsDir = path.join(app.getPath("userData"), "documents");
+  const resolvedPath = path.resolve(filePath);
+  if (!resolvedPath.startsWith(`${path.resolve(documentsDir)}${path.sep}`)) {
+    throw new Error("Fichier local non autorisé");
+  }
+  const error = await shell.openPath(resolvedPath);
+  if (error) throw new Error(error);
+});
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,

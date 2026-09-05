@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, FolderOpen, Bell, User, Star } from "lucide-react";
+import { Home, FolderOpen, Bell, User, Star, DownloadCloud } from "lucide-react";
 import { useNotifications, useProfile } from "@/lib/data";
 
 const TABS = [
   { to: "/dashboard", label: "Accueil", icon: Home },
   { to: "/documents", label: "Documents", icon: FolderOpen },
+  { to: "/offline", label: "Hors ligne", icon: DownloadCloud },
   { to: "/favorites", label: "Favoris", icon: Star },
   { to: "/notifications", label: "Alertes", icon: Bell },
   { to: "/profile", label: "Profil", icon: User },
